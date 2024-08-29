@@ -248,7 +248,7 @@ void Timer2_COMP_MODE(char OC2_MODE) {
  */
 void Timer2_init_OC2() {
 
-    setPIN_dir(B, OC2, OUT);
+    setPIN_dir(D, OC2, OUT);
     _delay_us(10);
 
 
