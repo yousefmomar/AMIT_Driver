@@ -92,6 +92,7 @@
 #define OC2  PD7
 #define OC1B PD4
 #define OC1A PD5
+#define ICP1 PD6
 
 //CTC MODES MACROS TIMER0,2
 #define CTC_DISABLE 0
@@ -124,6 +125,14 @@ operation, OC1A/OC1B disconnected.*/
 //Sync & Async modes in timer2 change
 #define Sync_To_Async 0
 #define ASync_To_sync 1
+
+//Analog Comparator Trigger Source or ICP1 input pin
+#define AC_SOURCE   1
+#define ICP1_SOURCE 0
+
+//Edge Detector in Input Capture Unit
+#define FALLING_EDGE 0
+#define RISING_EDGE  1
 
 #define TIMER0 0
 #define TIMER1 1
@@ -173,6 +182,19 @@ void initNormalMode_Timer_Counter2(char clk);
 void Clear_Timer2_Flags();
 void WAIT_UNTIL_LOAD_DATA_TIMER2();
 void ChangeBet_SyncAsync(char SyncAsync, char TCNT2_VAL, char Mode, char clk, char OCR2_VAL);
+
+//Input Capture Unit Functions
+void init_ICU_Timer1(char Source, char edge);
+void ICP1_EN();
+void Timer1_INT_Disable_ICR1() ;
+void Timer1_Change_TrigSource(char Source);
+void Clear_ICF1();
+void Timer1_Enable_NoiseCanceler();
+void Timer1_EdgeDetect_Mode(char edge);
+void AC_INT_EN();
+short int  Read_ICR();
+char Read_ICRL();
+char Read_ICRH();
 
 // TODO Insert declarations or function prototypes (right here) to leverage 
 // live documentation

@@ -700,6 +700,131 @@ void initNormalMode_Timer_Counter1(char clk) {
 
 }
 
+//////////////////////Input_Capture_Unit///////////////////////////////
+
+/**
+ * Enable ICP1 pin as an i/p pin
+ */
+void ICP1_EN(){
+    
+    setPIN_dir(D,ICP1,IN);
+    _delay_us(10);
+    
+}
+
+void Timer1_INT_Disable_ICR1(){
+    
+    TIMSK &= ~(1<<TICIE1);
+    
+}
+/**
+ * Clears Input Capture Interrupt Flag
+ */
+void Clear_ICF1(){
+    
+    TIFR &= ~(1<<ICF1);
+    
+}
+
+/**
+ * @return void
+ * @param Source : Analog Comparator, ICP1
+ */
+void Timer1_Change_TrigSource(char Source){
+    
+    switch(Source){
+        
+        case AC_SOURCE:
+            ACSR |= (1<<ACIC);
+            break;
+            
+        case ICP1_SOURCE:
+            ACSR &= ~(1<<ACIC);
+            
+        default:
+            break;     
+        
+    }
+    
+    Clear_ICF1();
+    
+}
+
+/**
+ * Enables Analog Comparator Interrupt
+ */
+void AC_INT_EN(){
+    
+    ACSR |= (1<<ACIE);
+    _delay_us(10);
+    
+}
+
+void Timer1_Enable_NoiseCanceler(){
+    
+    TCCR1B |= (1<<ICNC1);
+    
+}
+
+/**
+ * @return void
+ * @param edge :FALLING_EDGE, RISING_EDGE
+ */
+void Timer1_EdgeDetect_Mode(char edge){
+    
+    switch(edge){
+        
+        case FALLING_EDGE:
+            TCCR1B &= ~(1<<ICES1);
+            break;
+            
+        case RISING_EDGE:
+            TCCR1B |= (1<<ICES1);
+            break;
+            
+        default:
+            break;
+        
+    }
+    
+    Clear_ICF1();
+    
+}
+short int  Read_ICR();
+char Read_ICRL();
+char Read_ICRH();
+
+/**
+ * Initialize Input Capture Unit
+ * @param Source
+ * @param edge
+ */
+void init_ICU_Timer1(char Source, char edge){
+    
+    Timer1_Enable_NoiseCanceler();
+    
+    Timer1_Change_TrigSource(Source);
+    
+    Timer1_EdgeDetect_Mode(edge);
+    
+    switch(Source){
+        
+        case AC_SOURCE:
+            AC_INT_EN();
+            break;
+            
+        case ICP1_SOURCE:
+            ICP1_EN();
+            Timer1_INT_EN_ICR1();
+            break;
+            
+        default:
+            break;
+        
+    }
+    
+}
+
 /**
  * 
  * @param DUTY_PER  : Duty Cycle Percentage
