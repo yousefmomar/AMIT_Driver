@@ -346,7 +346,7 @@ void Clear_Timer2_Flags() {
 
 }
 
-void ChangeBet_SyncAsync(char SyncAsync, char TCNT2_VAL, char Mode, char clk, char OCR2_Val, char OCR2_VAL) {
+void ChangeBet_SyncAsync(char SyncAsync, char TCNT2_VAL, char Mode, char clk, char OCR2_VAL) {
 
     Timer2_INT_DISABLE_OCM();
     Timer2_INT_DISABLE_TOVF();
@@ -376,7 +376,7 @@ void ChangeBet_SyncAsync(char SyncAsync, char TCNT2_VAL, char Mode, char clk, ch
 
 
             }
-            
+
             Clear_Timer2_Flags();
 
             break;
@@ -403,12 +403,359 @@ void ChangeBet_SyncAsync(char SyncAsync, char TCNT2_VAL, char Mode, char clk, ch
 
 
             }
-            
+
             WAIT_UNTIL_LOAD_DATA_TIMER2();
-            
+
             Clear_Timer2_Flags();
             break;
 
     }
 
+}
+
+////////////////////////////////////////////////////TIMER1////////////////////////////////////////////////
+
+/**
+ * @return void
+ * @param clk : division clock of MC by 1,8,64,265,1024, external clock or turn off timer 
+ */
+void Timer1_setClk(char clk) {
+
+    TCCR1B &= ~((1 << CS10) | (1 << CS11) | (1 << CS12)); //clearing clk bits
+    _delay_us(10);
+
+    TCCR1B |= clk;
+
+}
+
+/**
+ * @return void
+ * @param Mode : normal,ctc,pwm,fast pwm
+ */
+void Timer1_setMode(char Mode) {
+
+    TCCR1B &= ~((1 << WGM13) | (1 << WGM12));
+    TCCR1A &= ~((1 << WGM10) | (1 << WGM11));
+    _delay_us(10);
+
+    switch (Mode) {
+
+        case NORMAL_MODE:
+            TCCR1B &= ~((1 << WGM13) | (1 << WGM12));
+            TCCR1A &= ~((1 << WGM10) | (1 << WGM11));
+            break;
+
+        case PWM_MODE_8bits:
+            TCCR1A |= (1 << WGM10);
+            break;
+
+        case PWM_MODE_9bits:
+            TCCR1A |= (1 << WGM11);
+            break;
+
+        case PWM_MODE_10bits:
+            TCCR1A |= ((1 << WGM10) | (1 << WGM11));
+            break;
+
+        case CTC_MODE_TOPisOCR1A:
+            TCCR1B |= (1 << WGM12);
+            break;
+
+        case FAST_PWM_MODE_8bits:
+            TCCR1B |= (1 << WGM12);
+            TCCR1A |= (1 << WGM10);
+            break;
+
+        case FAST_PWM_MODE_9bits:
+            TCCR1B |= (1 << WGM12);
+            TCCR1A |= (1 << WGM11);
+            break;
+
+        case FAST_PWM_MODE_10bits:
+            TCCR1B |= (1 << WGM12);
+            TCCR1A |= ((1 << WGM10) | (1 << WGM11));
+            break;
+
+        case PWM_MODE_FREQ_TOPisICR1:
+            TCCR1B |= (1 << WGM13);
+            break;
+
+        case PWM_MODE_FREQ_TOPisOCR1A:
+            TCCR1B |= (1 << WGM13);
+            TCCR1A |= (1 << WGM10);
+            break;
+
+        case PWM_MODE_TOPisICR1:
+            TCCR1B |= (1 << WGM13);
+            TCCR1A |= (1 << WGM11);
+            break;
+
+        case PWM_MODE_TOPisOCR1A:
+            TCCR1B |= (1 << WGM13);
+            TCCR1A |= ((1 << WGM10) | (1 << WGM11));
+            break;
+
+        case CTC_MODE_TOPisICR1:
+            TCCR1B |= ((1 << WGM13) | (1 << WGM12));
+            break;
+
+        case FAST_PWM_MODE_TOPisICR1:
+            TCCR1B |= ((1 << WGM13) | (1 << WGM12));
+            TCCR1A |= (1 << WGM11);
+            break;
+
+        case FAST_PWM_MODE_TOPisOCR1A:
+            TCCR1B |= ((1 << WGM13) | (1 << WGM12));
+            TCCR1A |= ((1 << WGM10) | (1 << WGM11));
+            break;
+
+        default:
+            break;
+
+    }
+
+}
+
+/**
+ * Function to Enable overflow interrupt timer1
+ */
+void Timer1_INT_EN_TOVF() {
+
+    TIMSK |= (1 << TOIE1);
+
+}
+
+/**
+ * Function to Enable O/P compare match interrupt timer1
+ */
+void Timer1_INT_EN_OCMA() {
+
+    TIMSK |= (1 << OCIE1A);
+
+}
+
+/**
+ * Function to Enable O/P compare match interrupt timer1
+ */
+void Timer1_INT_EN_OCMB() {
+
+    TIMSK |= (1 << OCIE1B);
+
+}
+
+/**
+ * Function to Enable O/P I/P Capture interrupt timer1
+ */
+void Timer1_INT_EN_ICR1() {
+
+    TIMSK |= (1 << TICIE1);
+
+}
+
+void Timer1_INT_DISABLE_TOVF() {
+
+    TIMSK &= ~(1 << TOIE1);
+
+}
+
+/**
+ * 
+ * @param OC1_MODE
+ * @return void
+ */
+void Timer1_COMP_MODE(char OC1_MODE) {
+
+    TCCR1A &= ~((1 << COM1A1) | (1 << COM1A0) | (1 << COM1B1) | (1 << COM1B0));
+    _delay_us(10);
+
+    TCCR1A |= (OC1_MODE << COM1B0);
+    TCCR1A |= (OC1_MODE << COM1A0);
+
+}
+
+/**
+ * set direction of OC1A and OC1B pin & select mode
+ * @param MODE : mode of ctc
+ * @return void
+ */
+void Timer1_init_OC1() {
+
+    setPIN_dir(D, OC1A, OUT);
+    setPIN_dir(D, OC1B, OUT);
+    _delay_us(10);
+
+
+}
+
+/**
+ * @return void
+ * @param OCR1A_TOP_VAL
+ */
+void Change_OCR1A(char OCR1A_TOP_VAL) {
+
+    OCR1A = OCR1A_TOP_VAL;
+
+}
+
+/**
+ * @return void
+ * @param OCR1A_TOP_VAL
+ */
+void Change_OCR1B(char OCR1B_TOP_VAL) {
+
+    OCR1B = OCR1B_TOP_VAL;
+
+}
+
+/**
+ * @return void
+ * @param Mode :PWM,FAST PWM,CTC modes
+ * @param clk
+ */
+void init_Timer1_WithOCR1A_AND_B(char Mode, char clk, char OCR1A_Val, char OCR1B_Val) {
+
+
+    Timer1_setMode(Mode);
+
+    _delay_ms(10);
+    Change_OCR1A(OCR1A_Val);
+    Change_OCR1B(OCR1B_Val);
+
+
+    Timer1_INT_EN_TOVF();
+
+    switch (Mode) {
+
+
+        case CTC_MODE_TOPisICR1:
+            Timer1_INT_DISABLE_TOVF();
+            Timer1_INT_EN_ICR1();
+            break;
+
+        case CTC_MODE_TOPisOCR1A:
+            Timer1_INT_DISABLE_TOVF();
+            Timer1_INT_EN_OCMA();
+            break;
+
+        case FAST_PWM_MODE_TOPisICR1:
+            Timer1_INT_EN_ICR1();
+            break;
+
+        case FAST_PWM_MODE_TOPisOCR1A:
+            Timer1_INT_EN_OCMA();
+            break;
+
+        case PWM_MODE_FREQ_TOPisICR1:
+            Timer1_INT_EN_ICR1();
+            break;
+
+        case PWM_MODE_FREQ_TOPisOCR1A:
+            Timer1_INT_EN_OCMA();
+            break;
+
+        case PWM_MODE_TOPisICR1:
+            Timer1_INT_EN_ICR1();
+            break;
+
+        case PWM_MODE_TOPisOCR1A:
+            Timer1_INT_EN_OCMA();
+            break;
+
+        case FAST_PWM_MODE_8bits:
+        case FAST_PWM_MODE_9bits:
+        case FAST_PWM_MODE_10bits:
+
+        case PWM_MODE_8bits:
+        case PWM_MODE_9bits:
+        case PWM_MODE_10bits:
+            Timer1_INT_EN_OCMA();
+            break;
+
+        default:
+            break;
+    }
+
+    _delay_ms(5);
+    Timer1_setClk(clk);
+
+
+}
+
+/**
+ * @return void
+ * @param clk
+ */
+void initNormalMode_Timer_Counter1(char clk) {
+
+
+    Timer1_setMode(NORMAL_MODE);
+
+
+    Timer1_INT_EN_TOVF();
+
+    _delay_ms(10);
+
+    Timer1_setClk(clk);
+
+
+}
+
+/**
+ * 
+ * @param DUTY_PER  : Duty Cycle Percentage
+ * @param TIMER_NUM : Timer 0 ,Timer 1 or Timer 2
+ * @return void
+ */
+void Set_DutyCycle(char TIMER_NUM, char DUTY_PER) {
+
+    switch (TIMER_NUM) {
+
+        case TIMER0:
+            Timer0_init_OC0();
+
+            Change_OCR0((255 * DUTY_PER) / 100.0);
+            break;
+
+        case TIMER1:
+
+            break;
+
+        case TIMER2:
+            Timer2_init_OC2();
+
+            Change_OCR2((255 * DUTY_PER) / 100.0);
+            break;
+
+        default:
+            break;
+
+    }
+
+}
+
+/**
+ * 
+ * @param TIMER_NUM
+ * @return char
+ */
+char get_DutyCycle(char TIMER_NUM) {
+
+
+    switch (TIMER_NUM) {
+
+        case TIMER0:
+            return (OCR0 * 100) / 255;
+
+        case TIMER1:
+            break;
+
+        case TIMER2:
+            return (OCR2 * 100) / 255;
+
+
+        default:
+            break;
+    }
+
+    return 0;
 }
