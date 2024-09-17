@@ -10,15 +10,48 @@
 #include"/Users/yousefmahmoud/Desktop/Studying/Embedded_Diploma_AMIT/EmbeddedC_codes/5/app5.X/MY_SPI.h"
 #include"/Users/yousefmahmoud/Desktop/Studying/Embedded_Diploma_AMIT/EmbeddedC_codes/1/app1.X/DIO.h"
 #include"/Users/yousefmahmoud/Desktop/Studying/Embedded_Diploma_AMIT/EmbeddedC_codes/1/app1.X/MY_LCD4.h"
+#include"/Users/yousefmahmoud/Desktop/Studying/Embedded_Diploma_AMIT/EmbeddedC_codes/1/app1.X/My_Interrupt.h"
+
 #include "EEPROM_1k.h"
 
 #include<util/delay.h>
 #include <avr/io.h>
+#include<avr/interrupt.h>
+
+ISR(INT0_vect) {
+
+    static char indicator = 0;
+
+    if (indicator == 0) {
+
+        char a = r_eeprom_1k(0x12);
+        _delay_ms(10);
+        indicator++;
+
+
+        LCD4_WRITE(a);
+        _delay_ms(500);
+
+
+    } else if (indicator == 1) {
+
+        char b = r_eeprom2_1k(0x12);
+        _delay_ms(10);
+        indicator = 0;
+
+
+        LCD4_WRITE(b);
+        _delay_ms(500);
+
+    }
+
+}
 
 int main(void) {
     /* Replace with your application code */
-    DDRC = 0xFF;
-    DDRD = 0xFF;
+
+    setPIN_dir(C, PC0, OUT);
+    setPIN_dir(C, PC1, OUT);
 
     init_spi(MASTER_SPI, SPI_CLK_64, SPI_CLK_X2_NOT_NEEDED, FROM_MSB);
     _delay_ms(25);
@@ -26,49 +59,27 @@ int main(void) {
     init_LCD4();
     _delay_ms(25);
 
+    init_INT0(INT_RISING_EDGE);
+    _delay_ms(5);
+    Global_INT_Enable();
+
+
     disable_W_protection();
-
-    w_eeprom_1k(0x12, 'A');
-    _delay_ms(10);
-
-    w_eeprom_1k(0x13, 'B');
-    _delay_ms(10);
-
-    w_eeprom_1k(0x14, 'C');
-    _delay_ms(10);
+    _delay_ms(25);
+    
+    disable2_W_protection();
+    _delay_ms(25);
     
 
-    char a = r_eeprom_1k(0x12);
-    _delay_ms(10);
+    w_eeprom_1k(0x12, 'A');
+    _delay_ms(500);
 
-    char b = r_eeprom_1k(0x13);
-    _delay_ms(10);
-
-    char c = r_eeprom_1k(0x14);
-    _delay_ms(10);
+    w_eeprom2_1k(0x12, 'B');
+    _delay_ms(500);
 
 
     while (1) {
 
-        LCD4_WRITE(a);
-        PORTC = a;
-        _delay_ms(500);
-
-        LCD4_WRITE(b);
-        PORTD = b;
-        _delay_ms(500);
-
-        LCD4_WRITE(c);
-        PORTC = c;
-        _delay_ms(500);
-        //        
-        //        LCD4_WRITE('5');
-        //        _delay_ms(500);
-
-        char i = 0;
-        i++;
-
-        if (i == 1)
-            break;
+        _delay_ms(5);
     }
 }

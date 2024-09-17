@@ -6,39 +6,42 @@
 
 #include<util/delay.h>
 
+//eeprom 1
 void en_write() {
-    setPIN(B, SS, HIGH);
+    setPIN(C,PC0, HIGH);
+    _delay_ms(1);
 
-    setPIN(B, SS, LOW);
+    setPIN(C,PC0 , LOW);
     _delay_ms(1);
 
     spi_send(WRITE_EN);
 
 
-    setPIN(B, SS, HIGH);
+    setPIN(C,PC0 , HIGH);
     _delay_ms(1);
 
 }
 
 void disable_write() {
-    setPIN(B, SS, HIGH);
+    setPIN(C, PC0, HIGH);
+    _delay_ms(1);
 
-    setPIN(B, SS, LOW);
+    setPIN(C, PC0, LOW);
 
     _delay_ms(1);
 
     spi_send(WRITE_DISABLE);
 
 
-    setPIN(B, SS, HIGH);
+    setPIN(C, PC0, HIGH);
     _delay_ms(1);
 
 }
 
 void disable_W_protection() {
-    setPIN(B, SS, HIGH);
+    setPIN(C, PC0, HIGH);
 
-    setPIN(B, SS, LOW);
+    setPIN(C, PC0, LOW);
 
     _delay_ms(1);
 
@@ -47,15 +50,15 @@ void disable_W_protection() {
     spi_send(0);
 
 
-    setPIN(B, SS, HIGH);
+    setPIN(C, PC0, HIGH);
     _delay_ms(1);
 
 }
 
 char r_eeprom_1k(char address) {
-    setPIN(B, SS, HIGH);
-
-    setPIN(B, SS, LOW);
+    setPIN(C, PC0, HIGH);
+    
+    setPIN(C, PC0, LOW);
 
     _delay_ms(1);
 
@@ -68,7 +71,7 @@ char r_eeprom_1k(char address) {
     char temp = spi_read();
 
 
-    setPIN(B, SS, HIGH);
+    setPIN(C, PC0, HIGH);
     _delay_ms(1);
 
     return temp;
@@ -76,13 +79,13 @@ char r_eeprom_1k(char address) {
 }
 
 void w_eeprom_1k(char address, char data) {
-    
+
     en_write();
     _delay_ms(5);
 
-    setPIN(B, SS, HIGH);
+    setPIN(C, PC0, HIGH);
 
-    setPIN(B, SS, LOW);
+    setPIN(C, PC0, LOW);
     _delay_ms(1);
 
     spi_send(W_INSTRUCTION);
@@ -91,9 +94,103 @@ void w_eeprom_1k(char address, char data) {
 
     spi_send(data);
 
-    setPIN(B, SS, HIGH);
+    setPIN(C, PC0, HIGH);
     _delay_ms(1);
 
     disable_write();
 
 }
+
+//eeprom 2
+void en2_write() {
+    setPIN(C,PC1, HIGH);
+
+    setPIN(C,PC1 , LOW);
+    _delay_ms(1);
+
+    spi_send(WRITE_EN);
+
+
+    setPIN(C,PC1 , HIGH);
+    _delay_ms(1);
+
+}
+
+void disable2_write() {
+    setPIN(C, PC1, HIGH);
+
+    setPIN(C, PC1, LOW);
+
+    _delay_ms(1);
+
+    spi_send(WRITE_DISABLE);
+
+
+    setPIN(C, PC1, HIGH);
+    _delay_ms(1);
+
+}
+
+void disable2_W_protection() {
+    setPIN(C, PC1, HIGH);
+
+    setPIN(C, PC1, LOW);
+
+    _delay_ms(1);
+
+    spi_send(STATUS_REG_INSTRUCTION_W);
+
+    spi_send(0);
+
+
+    setPIN(C, PC1, HIGH);
+    _delay_ms(1);
+
+}
+
+char r_eeprom2_1k(char address) {
+    setPIN(C, PC1, HIGH);
+    
+    setPIN(C, PC1, LOW);
+
+    _delay_ms(1);
+
+    spi_send(R_INSTRUCTION);
+
+    spi_send(address);
+
+    spi_send(DUMMY_DATA);
+
+    char temp = spi_read();
+
+
+    setPIN(C, PC1, HIGH);
+    _delay_ms(1);
+
+    return temp;
+
+}
+
+void w_eeprom2_1k(char address, char data) {
+
+    en2_write();
+    _delay_ms(5);
+
+    setPIN(C, PC1, HIGH);
+
+    setPIN(C, PC1, LOW);
+    _delay_ms(1);
+
+    spi_send(W_INSTRUCTION);
+
+    spi_send(address);
+
+    spi_send(data);
+
+    setPIN(C, PC1, HIGH);
+    _delay_ms(1);
+
+    disable2_write();
+
+}
+

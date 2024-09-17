@@ -42,10 +42,23 @@
 
 #define DUMMY_DATA 0x00
 
+#define E1 0b00
+#define E2 0b01
+#define E3 0b10
+#define E4 0b11
+
+
 char r_eeprom_1k(char address);
 void w_eeprom_1k(char address, char data);
 void en_write();
 void disable_write();
+void disable_W_protection();
+
+char r_eeprom2_1k(char address);
+void w_eeprom2_1k(char address, char data);
+void en2_write();
+void disable2_write();
+void disable2_W_protection();
 
 #endif	/* EEPROM_1K_H */
 

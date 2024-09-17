@@ -9,6 +9,7 @@
       <itemPath>EEPROM_1k.h</itemPath>
       <itemPath>../../../1/app1.X/MY_LCD4.h</itemPath>
       <itemPath>../../../1/app1.X/int_to_arr.h</itemPath>
+      <itemPath>../../../1/app1.X/My_Interrupt.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -28,6 +29,7 @@
       <itemPath>EEPROM_1k.c</itemPath>
       <itemPath>../../../1/app1.X/MY_LCD4.c</itemPath>
       <itemPath>../../../1/app1.X/int_to_arr.c</itemPath>
+      <itemPath>../../../1/app1.X/My_Interrupt.c</itemPath>
     </logicalFolder>
   </logicalFolder>
   <sourceRootList>
