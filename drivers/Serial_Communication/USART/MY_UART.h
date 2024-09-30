@@ -55,30 +55,37 @@
 #define BaudRate_9600   9600
 #define BaudRate_115200 115200
 #define BaudRate_2400   2400
+#define BaudRate_1200   1200
 
 //communication mode
 #define FULL_DUPLEX_UART   3
 #define TRANSMIT_ONLY_UART 1
 #define RECIEVE_ONLY_UART  2
 
+//master-slave clock generation
+#define Master_clk          1
+#define Slave_clk           2
+
+#define XCK PB0
+
 #include <xc.h> // include processor files - each processor file is guarded.  
 
-void init_UART(int BaudRate, char RX_TX);
+void init_UART_Async(int BaudRate,char stopBits ,char RX_or_TX);
+void init_UART_Sync(int BaudRate,char stopBits ,char RX_or_TX,char Generation_dir);
 //void BaudRate_X2_U();
-//void BaudRate_X2_X1(char X2_X1);
 char WAIT_UNTIL_UDRisNOT_EMPTY();
-void UDREF_INT_EN();
-void RXF_INT_EN();
-//void Set_StopBitsNum_U(char StopBitsNum);
+//void UDREF_INT_EN();
+//void RXF_INT_EN();
+void Set_StopBitsNum_U(char StopBitsNum);
 void SetBaudRate_U(int BaudRate);
 //void SetDataSize_U(char size);
-//void SetClkMode_U(char clkMode);
 //void SetParityMode_U(char Parity);
 void RX_TX_MODE(char RX_TX);
 void UART_SEND(char data);
 void UART_SEND_STR(char*);
 char WAIT_UNTIL_RX_ALL_SHIFTED();
 char UART_RECEIVE();
+void Set_XCK_DIR(char Generation_dir);
 
 
 #endif	/* MY_UART_H */

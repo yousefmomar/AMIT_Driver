@@ -2,11 +2,31 @@
 
 #include<avr/io.h>
 #include"MY_UART.h"
+#include "DIO.h"
 #include<util/delay.h>
 
 
 //void BaudRate_X2_U();
-//void BaudRate_X2_X1(char X2_X1);
+
+void Set_XCK_DIR(char Generation_dir) {
+
+    switch (Generation_dir) {
+
+        case Slave_clk:
+            setPIN_dir(B, XCK, IN);
+            break;
+
+        case Master_clk:
+            setPIN_dir(B, XCK, OUT);
+            break;
+
+        default:
+            break;
+
+
+    }
+
+}
 
 char WAIT_UNTIL_UDRisNOT_EMPTY() {
 
@@ -31,19 +51,36 @@ void RXF_INT_EN() {
     UCSRB |= (1 << RXCIE);
 
 }
-//void Set_StopBitsNum_U(char StopBitsNum);
+
+void Set_StopBitsNum_U(char StopBitsNum) {
+
+    switch (StopBitsNum) {
+
+        case _1Sbit:
+            UCSRC |= UCSRC | (1 << URSEL) & (~(1 << USBS));
+            break;
+
+        case _2Sbit:
+            UCSRC |= ((1 << URSEL) | (1 << USBS));
+            break;
+
+        default:
+            break;
+
+    }
+
+}
 
 void SetBaudRate_U(int BaudRate) {
 
-    short temp = (F_CPU / 16.0 / BaudRate) - 1;
 
-    UBRRL = temp;
-    UBRRH = (temp >> 8);
-
+    UBRRL = BaudRate;
+    UBRRH = (BaudRate >> 8);
 
 }
 //void SetDataSize_U(char size);
-//void SetClkMode_U(char clkMode);
+
+
 //void SetParityMode_U(char Parity);
 
 void RX_TX_MODE(char RX_TX) {
@@ -52,15 +89,14 @@ void RX_TX_MODE(char RX_TX) {
 
 }
 
-void init_UART(int BaudRate, char RX_TX) {
+void init_UART_Async(int BaudRate, char StopBits, char RX_or_TX) {
 
-    //    SetClkMode_U(clkMode);
-    //    _delay_us(5);
-    //
-    //    Set_StopBitsNum_U(StopBitsNum);
-    //    _delay_us(5);
+    short temp = (F_CPU / 16.0 / BaudRate) - 1;
 
-    SetBaudRate_U(BaudRate);
+    Set_StopBitsNum_U(StopBits);
+    _delay_us(5);
+
+    SetBaudRate_U(temp);
     _delay_us(5);
 
     //    SetParityMode_U(Parity);
@@ -69,31 +105,36 @@ void init_UART(int BaudRate, char RX_TX) {
     //    SetDataSize_U(size);
     //    _delay_us(5);
 
-    RX_TX_MODE(RX_TX);
+    RX_TX_MODE(RX_or_TX);
     _delay_us(5);
 
-    //    BaudRate_X2_X1(X2_X1);
+    RXF_INT_EN();
+
+}
+
+void init_UART_Sync(int BaudRate, char StopBits, char RX_or_TX, char Generation_dir) {
+
+    short temp = (F_CPU / 2.0 / BaudRate) - 1;
+
+    Set_StopBitsNum_U(StopBits);
+    _delay_us(5);
+
+    SetBaudRate_U(temp);
+    _delay_us(5);
+
+    //    SetParityMode_U(Parity);
     //    _delay_us(5);
 
-    switch (RX_TX) {
+    //    SetDataSize_U(size);
+    //    _delay_us(5);
 
-        case FULL_DUPLEX_UART:
-            UDREF_INT_EN();
-            RXF_INT_EN();
-            break;
+    RX_TX_MODE(RX_or_TX);
+    _delay_us(5);
 
-        case TRANSMIT_ONLY_UART:
-            UDREF_INT_EN();
-            break;
+    Set_XCK_DIR(Generation_dir);
+    _delay_us(5);
 
-        case RECIEVE_ONLY_UART:
-            RXF_INT_EN();
-            break;
-
-        default:
-            break;
-
-    }
+    RXF_INT_EN();
 
 }
 
@@ -116,7 +157,7 @@ void UART_SEND_STR(char* str) {
 
 char UART_RECEIVE() {
 
-    WAIT_UNTIL_RX_ALL_SHIFTED();
+    //    WAIT_UNTIL_RX_ALL_SHIFTED();
 
     return UDR;
 
